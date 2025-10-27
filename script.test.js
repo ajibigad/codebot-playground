@@ -8,17 +8,44 @@ let currentInput = '';
 let operator = '';
 let previousInput = '';
 let shouldResetDisplay = false;
+let inactivityTimer = null;
+const INACTIVITY_TIMEOUT = 60000;
+
+// Mock confetti function
+global.confetti = jest.fn();
+
+function triggerConfetti() {
+    if (typeof confetti !== 'undefined') {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+}
+
+function resetInactivityTimer() {
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    inactivityTimer = setTimeout(() => {
+        triggerConfetti();
+        resetInactivityTimer();
+    }, INACTIVITY_TIMEOUT);
+}
 
 function appendToDisplay(value) {
+    resetInactivityTimer();
+
     if (shouldResetDisplay) {
         display.value = '';
         shouldResetDisplay = false;
     }
-    
+
     if (value === '.' && display.value.includes('.')) {
         return;
     }
-    
+
     if (display.value === '0' && value !== '.') {
         display.value = value;
     } else {
@@ -27,6 +54,7 @@ function appendToDisplay(value) {
 }
 
 function clearDisplay() {
+    resetInactivityTimer();
     display.value = '';
     currentInput = '';
     operator = '';
@@ -35,15 +63,18 @@ function clearDisplay() {
 }
 
 function deleteLast() {
+    resetInactivityTimer();
     display.value = display.value.slice(0, -1);
 }
 
 function calculate() {
+    resetInactivityTimer();
+
     if (operator && previousInput && display.value) {
         let result;
         const prev = parseFloat(previousInput);
         const current = parseFloat(display.value);
-        
+
         switch (operator) {
             case '+':
                 result = prev + current;
@@ -64,7 +95,7 @@ function calculate() {
             default:
                 return;
         }
-        
+
         display.value = result.toString();
         operator = '';
         previousInput = '';
@@ -84,11 +115,16 @@ describe('Calculator Tests', () => {
     operator = '';
     previousInput = '';
     shouldResetDisplay = false;
+    inactivityTimer = null;
+    jest.clearAllMocks();
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
     // Clean up
     document.body.innerHTML = '';
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   describe('appendToDisplay', () => {
@@ -327,6 +363,118 @@ describe('Calculator Tests', () => {
       display.value = '0.2';
       calculate();
       expect(parseFloat(display.value)).toBeCloseTo(0.3, 10);
+    });
+  });
+
+  describe('Confetti Inactivity Feature', () => {
+    test('should trigger confetti after 60 seconds of inactivity', () => {
+      resetInactivityTimer();
+
+      expect(confetti).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(60000);
+
+      expect(confetti).toHaveBeenCalledWith({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    });
+
+    test('should not trigger confetti before 60 seconds', () => {
+      resetInactivityTimer();
+
+      jest.advanceTimersByTime(59999);
+
+      expect(confetti).not.toHaveBeenCalled();
+    });
+
+    test('should reset timer when appendToDisplay is called', () => {
+      resetInactivityTimer();
+
+      jest.advanceTimersByTime(30000);
+      appendToDisplay('5');
+
+      jest.advanceTimersByTime(30000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(30000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should reset timer when clearDisplay is called', () => {
+      resetInactivityTimer();
+
+      jest.advanceTimersByTime(50000);
+      clearDisplay();
+
+      jest.advanceTimersByTime(50000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(10000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should reset timer when deleteLast is called', () => {
+      resetInactivityTimer();
+      display.value = '123';
+
+      jest.advanceTimersByTime(40000);
+      deleteLast();
+
+      jest.advanceTimersByTime(40000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(20000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should reset timer when calculate is called', () => {
+      resetInactivityTimer();
+      previousInput = '5';
+      operator = '+';
+      display.value = '3';
+
+      jest.advanceTimersByTime(45000);
+      calculate();
+
+      jest.advanceTimersByTime(45000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(15000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should continue triggering confetti every 60 seconds if no interaction', () => {
+      resetInactivityTimer();
+
+      jest.advanceTimersByTime(60000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      jest.advanceTimersByTime(60000);
+      expect(confetti).toHaveBeenCalledTimes(2);
+
+      jest.advanceTimersByTime(60000);
+      expect(confetti).toHaveBeenCalledTimes(3);
+    });
+
+    test('triggerConfetti should not throw error when confetti is undefined', () => {
+      const originalConfetti = global.confetti;
+      global.confetti = undefined;
+
+      expect(() => triggerConfetti()).not.toThrow();
+
+      global.confetti = originalConfetti;
+    });
+
+    test('should clear existing timer when resetting', () => {
+      resetInactivityTimer();
+      const firstTimer = inactivityTimer;
+
+      resetInactivityTimer();
+      const secondTimer = inactivityTimer;
+
+      expect(firstTimer).not.toBe(secondTimer);
     });
   });
 });
