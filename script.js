@@ -4,6 +4,10 @@ let operator = '';
 let previousInput = '';
 let shouldResetDisplay = false;
 
+// Inactivity timer variables
+let inactivityTimer = null;
+const INACTIVITY_TIMEOUT = 60000; // 60 seconds in milliseconds
+
 function appendToDisplay(value) {
     if (shouldResetDisplay) {
         display.value = '';
@@ -67,23 +71,61 @@ function calculate() {
     }
 }
 
+// Confetti animation function
+function triggerConfetti() {
+    if (typeof confetti !== 'undefined') {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+}
+
+// Reset inactivity timer
+function resetInactivityTimer() {
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+
+    inactivityTimer = setTimeout(() => {
+        triggerConfetti();
+        resetInactivityTimer(); // Restart timer after confetti
+    }, INACTIVITY_TIMEOUT);
+}
+
 // Handle operator clicks
 document.addEventListener('DOMContentLoaded', function() {
     const operatorButtons = document.querySelectorAll('.operator');
-    
+
     operatorButtons.forEach(button => {
         button.addEventListener('click', function() {
             const op = this.textContent;
-            
+
             if (op === '÷' || op === '×' || op === '+' || op === '-') {
                 if (operator && previousInput && display.value) {
                     calculate();
                 }
-                
+
                 previousInput = display.value;
                 operator = op === '÷' ? '/' : op === '×' ? '*' : op;
                 shouldResetDisplay = true;
             }
         });
     });
+
+    // Initialize inactivity timer
+    resetInactivityTimer();
+
+    // Track user interactions on all buttons
+    const allButtons = document.querySelectorAll('.btn');
+    allButtons.forEach(button => {
+        button.addEventListener('click', resetInactivityTimer);
+    });
+
+    // Track keyboard interactions on display
+    if (display) {
+        display.addEventListener('focus', resetInactivityTimer);
+        display.addEventListener('keydown', resetInactivityTimer);
+    }
 });
