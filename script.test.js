@@ -9,7 +9,36 @@ let operator = '';
 let previousInput = '';
 let shouldResetDisplay = false;
 
+// Inactivity timer variables
+let inactivityTimer = null;
+const INACTIVITY_TIMEOUT = 60000;
+
+// Mock confetti function
+global.confetti = jest.fn();
+
+// Function to trigger confetti animation
+function triggerConfetti() {
+    if (typeof confetti !== 'undefined') {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+}
+
+// Function to reset the inactivity timer
+function resetInactivityTimer() {
+    if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+    }
+    inactivityTimer = setTimeout(() => {
+        triggerConfetti();
+    }, INACTIVITY_TIMEOUT);
+}
+
 function appendToDisplay(value) {
+    resetInactivityTimer();
     if (shouldResetDisplay) {
         display.value = '';
         shouldResetDisplay = false;
@@ -27,6 +56,7 @@ function appendToDisplay(value) {
 }
 
 function clearDisplay() {
+    resetInactivityTimer();
     display.value = '';
     currentInput = '';
     operator = '';
@@ -35,10 +65,12 @@ function clearDisplay() {
 }
 
 function deleteLast() {
+    resetInactivityTimer();
     display.value = display.value.slice(0, -1);
 }
 
 function calculate() {
+    resetInactivityTimer();
     if (operator && previousInput && display.value) {
         let result;
         const prev = parseFloat(previousInput);
@@ -84,11 +116,21 @@ describe('Calculator Tests', () => {
     operator = '';
     previousInput = '';
     shouldResetDisplay = false;
+
+    // Clear timer and reset confetti mock
+    if (inactivityTimer !== null) {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = null;
+    }
+    jest.clearAllMocks();
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
     // Clean up
     document.body.innerHTML = '';
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   describe('appendToDisplay', () => {
@@ -327,6 +369,144 @@ describe('Calculator Tests', () => {
       display.value = '0.2';
       calculate();
       expect(parseFloat(display.value)).toBeCloseTo(0.3, 10);
+    });
+  });
+
+  describe('Inactivity Timer and Confetti', () => {
+    test('should trigger confetti after 60 seconds of inactivity', () => {
+      // Start the timer
+      resetInactivityTimer();
+
+      // Fast-forward time by 60 seconds
+      jest.advanceTimersByTime(60000);
+
+      // Confetti should have been called
+      expect(confetti).toHaveBeenCalledTimes(1);
+      expect(confetti).toHaveBeenCalledWith({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    });
+
+    test('should reset timer when appendToDisplay is called', () => {
+      resetInactivityTimer();
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User interacts with calculator
+      appendToDisplay('5');
+
+      // Fast-forward another 50 seconds (total would be 80, but timer was reset)
+      jest.advanceTimersByTime(50000);
+
+      // Confetti should not have been called yet
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 10 seconds (60 seconds since reset)
+      jest.advanceTimersByTime(10000);
+
+      // Now confetti should be called
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should reset timer when clearDisplay is called', () => {
+      resetInactivityTimer();
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User clears display
+      clearDisplay();
+
+      // Fast-forward another 50 seconds
+      jest.advanceTimersByTime(50000);
+
+      // Confetti should not have been called yet
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 10 seconds
+      jest.advanceTimersByTime(10000);
+
+      // Now confetti should be called
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should reset timer when deleteLast is called', () => {
+      resetInactivityTimer();
+      display.value = '123';
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User deletes last character
+      deleteLast();
+
+      // Fast-forward another 50 seconds
+      jest.advanceTimersByTime(50000);
+
+      // Confetti should not have been called yet
+      expect(confetti).not.toHaveBeenCalled();
+    });
+
+    test('should reset timer when calculate is called', () => {
+      resetInactivityTimer();
+      previousInput = '5';
+      operator = '+';
+      display.value = '3';
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User calculates
+      calculate();
+
+      // Fast-forward another 50 seconds
+      jest.advanceTimersByTime(50000);
+
+      // Confetti should not have been called yet
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 10 seconds
+      jest.advanceTimersByTime(10000);
+
+      // Now confetti should be called
+      expect(confetti).toHaveBeenCalledTimes(1);
+    });
+
+    test('should handle confetti when confetti is undefined', () => {
+      const originalConfetti = global.confetti;
+      global.confetti = undefined;
+
+      // This should not throw an error
+      expect(() => {
+        triggerConfetti();
+      }).not.toThrow();
+
+      global.confetti = originalConfetti;
+    });
+
+    test('should clear previous timer when resetInactivityTimer is called multiple times', () => {
+      resetInactivityTimer();
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // Reset timer again
+      resetInactivityTimer();
+
+      // Fast-forward 30 seconds more (total 60, but should not trigger)
+      jest.advanceTimersByTime(30000);
+
+      // Confetti should not have been called yet
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 30 seconds (60 from last reset)
+      jest.advanceTimersByTime(30000);
+
+      // Now confetti should be called
+      expect(confetti).toHaveBeenCalledTimes(1);
     });
   });
 });
