@@ -6,7 +6,12 @@ let shouldResetDisplay = false;
 
 // Inactivity timer for confetti
 let inactivityTimer = null;
-const INACTIVITY_TIMEOUT = 60000; // 60 seconds in milliseconds
+
+// Function to get random timeout between 10-60 seconds
+function getRandomTimeout() {
+    // Random timeout between 10000ms (10s) and 60000ms (60s)
+    return Math.floor(Math.random() * 50001) + 10000;
+}
 
 // Function to trigger confetti animation
 function triggerConfetti() {
@@ -28,10 +33,11 @@ function resetInactivityTimer() {
         clearTimeout(inactivityTimer);
     }
 
-    // Start new timer
+    // Start new timer with random timeout
+    const timeout = getRandomTimeout();
     inactivityTimer = setTimeout(() => {
         triggerConfetti();
-    }, INACTIVITY_TIMEOUT);
+    }, timeout);
 }
 
 function appendToDisplay(value) {
