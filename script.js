@@ -10,7 +10,10 @@ let inactivityTimer = null;
 // Function to get random timeout between 10-60 seconds
 function getRandomTimeout() {
     // Random timeout between 10000ms (10s) and 60000ms (60s)
-    return Math.floor(Math.random() * 50001) + 10000;
+    randomTimeout = Math.floor(Math.random() * 50001) + 10000;
+    console.log("Random timeout", randomTimeout);
+
+    return randomTimeout;
 }
 
 // Function to trigger confetti animation
@@ -24,6 +27,8 @@ function triggerConfetti() {
             origin: { y: 0.6 }
         });
     }
+    // Reset timer after confetti to trigger again at random intervals
+    resetInactivityTimer();
 }
 
 // Function to reset the inactivity timer

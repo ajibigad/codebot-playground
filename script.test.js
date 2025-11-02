@@ -29,6 +29,8 @@ function triggerConfetti() {
             origin: { y: 0.6 }
         });
     }
+    // Reset timer after confetti to trigger again at random intervals
+    resetInactivityTimer();
 }
 
 // Function to reset the inactivity timer
@@ -390,11 +392,11 @@ describe('Calculator Tests', () => {
       jest.advanceTimersByTime(10000);
       expect(confetti).not.toHaveBeenCalled();
 
-      // Fast-forward to exceed the random timeout
-      jest.advanceTimersByTime(60000); // Advance enough to cover any random timeout
+      // Fast-forward to trigger first confetti (~15s)
+      jest.advanceTimersByTime(10000);
 
-      // Confetti should have been called
-      expect(confetti).toHaveBeenCalledTimes(1);
+      // Confetti should have been called at least once
+      expect(confetti).toHaveBeenCalled();
       expect(confetti).toHaveBeenCalledWith({
         particleCount: 100,
         spread: 70,
@@ -538,6 +540,31 @@ describe('Calculator Tests', () => {
 
       // Now confetti should be called once (only from the second timer)
       expect(confetti).toHaveBeenCalledTimes(1);
+
+      mockRandom.mockRestore();
+    });
+
+    test('should continuously trigger confetti at random intervals without user interaction', () => {
+      // Mock Math.random to return different values for different calls
+      const mockRandom = jest.spyOn(global.Math, 'random')
+        .mockReturnValueOnce(0.2) // First timeout: ~20000ms (20s)
+        .mockReturnValueOnce(0.6) // Second timeout: ~40000ms (40s)
+        .mockReturnValueOnce(0.8); // Third timeout: ~50000ms (50s)
+
+      // Initialize timer
+      resetInactivityTimer();
+
+      // Fast-forward to first confetti trigger (20s)
+      jest.advanceTimersByTime(20000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      // Fast-forward to second confetti trigger (40s more)
+      jest.advanceTimersByTime(40000);
+      expect(confetti).toHaveBeenCalledTimes(2);
+
+      // Fast-forward to third confetti trigger (50s more)
+      jest.advanceTimersByTime(50000);
+      expect(confetti).toHaveBeenCalledTimes(3);
 
       mockRandom.mockRestore();
     });
