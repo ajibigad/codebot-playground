@@ -11,8 +11,10 @@ const INACTIVITY_TIMEOUT = 60000; // 60 seconds in milliseconds
 // Function to trigger confetti animation
 function triggerConfetti() {
     if (typeof confetti !== 'undefined') {
+        // Random particle count between 50 (less dramatic) and 200 (crazy dramatic)
+        const randomParticleCount = Math.floor(Math.random() * 151) + 50;
         confetti({
-            particleCount: 100,
+            particleCount: randomParticleCount,
             spread: 70,
             origin: { y: 0.6 }
         });
