@@ -4,7 +4,7 @@
   "description": "A simple browser-based calculator application",
   "main": "index.html",
   "scripts": {
-    "serve": "live-server --port=8080 --open=/",
+    "serve": "live-server --port=8080 --open=/ --ignore=\".git,node_modules\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
