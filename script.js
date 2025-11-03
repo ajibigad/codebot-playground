@@ -6,6 +6,41 @@ let shouldResetDisplay = false;
 
 // Inactivity timer for confetti
 let inactivityTimer = null;
+let countdownInterval = null;
+let countdownEndTime = null;
+
+// Function to update countdown display
+function updateCountdown() {
+    const now = Date.now();
+    const timeRemaining = Math.max(0, Math.ceil((countdownEndTime - now) / 1000));
+
+    const countdownElement = document.getElementById('countdown-value');
+    if (countdownElement) {
+        countdownElement.textContent = timeRemaining;
+    }
+
+    if (timeRemaining === 0) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+}
+
+// Function to start countdown display
+function startCountdown(durationMs) {
+    // Clear any existing countdown interval
+    if (countdownInterval !== null) {
+        clearInterval(countdownInterval);
+    }
+
+    // Set the end time
+    countdownEndTime = Date.now() + durationMs;
+
+    // Update immediately
+    updateCountdown();
+
+    // Update every second
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
 
 // Function to get random timeout between 10-60 seconds
 function getRandomTimeout() {
@@ -43,6 +78,9 @@ function resetInactivityTimer() {
     inactivityTimer = setTimeout(() => {
         triggerConfetti();
     }, timeout);
+
+    // Start countdown display
+    startCountdown(timeout);
 }
 
 function appendToDisplay(value) {
