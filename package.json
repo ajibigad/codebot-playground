@@ -4,7 +4,7 @@
   "description": "A simple browser-based calculator application",
   "main": "index.html",
   "scripts": {
-    "serve": "live-server --port=8080 --open=/",
+    "serve": "live-server --port=8080 --open=/ --ignore=\".git,node_modules\"",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -20,6 +20,8 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4"
   }
 }
-

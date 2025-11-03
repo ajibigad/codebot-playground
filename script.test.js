@@ -9,7 +9,43 @@ let operator = '';
 let previousInput = '';
 let shouldResetDisplay = false;
 
+// Inactivity timer variables
+let inactivityTimer = null;
+
+// Mock confetti function
+global.confetti = jest.fn();
+
+// Function to get random timeout between 10-60 seconds
+function getRandomTimeout() {
+    return Math.floor(Math.random() * 50001) + 10000;
+}
+
+// Function to trigger confetti animation
+function triggerConfetti() {
+    if (typeof confetti !== 'undefined') {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+    // Reset timer after confetti to trigger again at random intervals
+    resetInactivityTimer();
+}
+
+// Function to reset the inactivity timer
+function resetInactivityTimer() {
+    if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+    }
+    const timeout = getRandomTimeout();
+    inactivityTimer = setTimeout(() => {
+        triggerConfetti();
+    }, timeout);
+}
+
 function appendToDisplay(value) {
+    resetInactivityTimer();
     if (shouldResetDisplay) {
         display.value = '';
         shouldResetDisplay = false;
@@ -27,6 +63,7 @@ function appendToDisplay(value) {
 }
 
 function clearDisplay() {
+    resetInactivityTimer();
     display.value = '';
     currentInput = '';
     operator = '';
@@ -35,10 +72,12 @@ function clearDisplay() {
 }
 
 function deleteLast() {
+    resetInactivityTimer();
     display.value = display.value.slice(0, -1);
 }
 
 function calculate() {
+    resetInactivityTimer();
     if (operator && previousInput && display.value) {
         let result;
         const prev = parseFloat(previousInput);
@@ -84,11 +123,21 @@ describe('Calculator Tests', () => {
     operator = '';
     previousInput = '';
     shouldResetDisplay = false;
+
+    // Clear timer and reset confetti mock
+    if (inactivityTimer !== null) {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = null;
+    }
+    jest.clearAllMocks();
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
     // Clean up
     document.body.innerHTML = '';
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   describe('appendToDisplay', () => {
@@ -327,6 +376,197 @@ describe('Calculator Tests', () => {
       display.value = '0.2';
       calculate();
       expect(parseFloat(display.value)).toBeCloseTo(0.3, 10);
+    });
+  });
+
+  describe('Inactivity Timer and Confetti', () => {
+    test('should trigger confetti after random timeout (10-60 seconds)', () => {
+      // Mock getRandomTimeout to return a specific value for testing
+      const mockTimeout = 15000; // 15 seconds
+      jest.spyOn(global.Math, 'random').mockReturnValue(0.1); // Will result in ~15000ms
+
+      // Start the timer
+      resetInactivityTimer();
+
+      // Fast-forward time by less than timeout
+      jest.advanceTimersByTime(10000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward to trigger first confetti (~15s)
+      jest.advanceTimersByTime(10000);
+
+      // Confetti should have been called at least once
+      expect(confetti).toHaveBeenCalled();
+      expect(confetti).toHaveBeenCalledWith({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      global.Math.random.mockRestore();
+    });
+
+    test('should reset timer when appendToDisplay is called', () => {
+      resetInactivityTimer();
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User interacts with calculator
+      appendToDisplay('5');
+
+      // Fast-forward another 50 seconds
+      jest.advanceTimersByTime(50000);
+
+      // Confetti should not have been called yet (since timer was reset and random timeout could be up to 60s)
+      // Fast-forward enough time to ensure any random timeout would trigger
+      jest.advanceTimersByTime(60000);
+
+      // Now confetti should be called
+      expect(confetti).toHaveBeenCalled();
+    });
+
+    test('should reset timer when clearDisplay is called', () => {
+      // Mock Math.random for predictable behavior
+      const mockRandom = jest.spyOn(global.Math, 'random').mockReturnValue(0.8); // ~50000ms timeout
+
+      resetInactivityTimer();
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User clears display
+      clearDisplay();
+
+      // Fast-forward 40 seconds - shouldn't trigger yet (50s timeout)
+      jest.advanceTimersByTime(40000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 15 seconds to trigger
+      jest.advanceTimersByTime(15000);
+
+      // Now confetti should be called once
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      mockRandom.mockRestore();
+    });
+
+    test('should reset timer when deleteLast is called', () => {
+      // Mock Math.random for predictable behavior
+      const mockRandom = jest.spyOn(global.Math, 'random').mockReturnValue(0.6); // ~40000ms timeout
+
+      resetInactivityTimer();
+      display.value = '123';
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User deletes last character
+      deleteLast();
+
+      // Fast-forward 30 seconds - shouldn't trigger yet (40s timeout)
+      jest.advanceTimersByTime(30000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 15 seconds to trigger
+      jest.advanceTimersByTime(15000);
+
+      // Confetti should have been called once
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      mockRandom.mockRestore();
+    });
+
+    test('should reset timer when calculate is called', () => {
+      // Mock Math.random for predictable behavior
+      const mockRandom = jest.spyOn(global.Math, 'random').mockReturnValue(0.7); // ~45000ms timeout
+
+      resetInactivityTimer();
+      previousInput = '5';
+      operator = '+';
+      display.value = '3';
+
+      // Fast-forward 30 seconds
+      jest.advanceTimersByTime(30000);
+
+      // User calculates
+      calculate();
+
+      // Fast-forward 35 seconds - shouldn't trigger yet (45s timeout)
+      jest.advanceTimersByTime(35000);
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward another 15 seconds to trigger
+      jest.advanceTimersByTime(15000);
+
+      // Now confetti should be called once
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      mockRandom.mockRestore();
+    });
+
+    test('should handle confetti when confetti is undefined', () => {
+      const originalConfetti = global.confetti;
+      global.confetti = undefined;
+
+      // This should not throw an error
+      expect(() => {
+        triggerConfetti();
+      }).not.toThrow();
+
+      global.confetti = originalConfetti;
+    });
+
+    test('should clear previous timer when resetInactivityTimer is called multiple times', () => {
+      // Mock Math.random to get a predictable timeout
+      const mockRandom = jest.spyOn(global.Math, 'random').mockReturnValue(0.5); // Will result in ~35000ms
+
+      resetInactivityTimer();
+
+      // Fast-forward 20 seconds
+      jest.advanceTimersByTime(20000);
+
+      // Reset timer again (clears the first timer)
+      resetInactivityTimer();
+
+      // Fast-forward 20 seconds more (total 40 from start, but only 20 from reset)
+      jest.advanceTimersByTime(20000);
+
+      // Confetti should not have been called yet (timeout is ~35s from reset)
+      expect(confetti).not.toHaveBeenCalled();
+
+      // Fast-forward enough to trigger the second timer (15s more to reach 35s from reset)
+      jest.advanceTimersByTime(20000);
+
+      // Now confetti should be called once (only from the second timer)
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      mockRandom.mockRestore();
+    });
+
+    test('should continuously trigger confetti at random intervals without user interaction', () => {
+      // Mock Math.random to return different values for different calls
+      const mockRandom = jest.spyOn(global.Math, 'random')
+        .mockReturnValueOnce(0.2) // First timeout: ~20000ms (20s)
+        .mockReturnValueOnce(0.6) // Second timeout: ~40000ms (40s)
+        .mockReturnValueOnce(0.8); // Third timeout: ~50000ms (50s)
+
+      // Initialize timer
+      resetInactivityTimer();
+
+      // Fast-forward to first confetti trigger (20s)
+      jest.advanceTimersByTime(20000);
+      expect(confetti).toHaveBeenCalledTimes(1);
+
+      // Fast-forward to second confetti trigger (40s more)
+      jest.advanceTimersByTime(40000);
+      expect(confetti).toHaveBeenCalledTimes(2);
+
+      // Fast-forward to third confetti trigger (50s more)
+      jest.advanceTimersByTime(50000);
+      expect(confetti).toHaveBeenCalledTimes(3);
+
+      mockRandom.mockRestore();
     });
   });
 });
