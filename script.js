@@ -103,7 +103,7 @@ function appendToDisplay(value) {
 
 function clearDisplay() {
     resetInactivityTimer();
-    display.value = '';
+    display.value = '0';
     currentInput = '';
     operator = '';
     previousInput = '';
@@ -152,6 +152,9 @@ function calculate() {
 
 // Handle operator clicks
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize display with 0
+    display.value = '0';
+
     const operatorButtons = document.querySelectorAll('.operator');
 
     operatorButtons.forEach(button => {
