@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Calculator body -->
+  <rect x="15" y="10" width="70" height="80" rx="8" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+
+  <!-- Display screen -->
+  <rect x="22" y="17" width="56" height="18" rx="3" fill="#7f8c8d" stroke="#95a5a6" stroke-width="1"/>
+  <text x="72" y="30" font-family="monospace" font-size="12" fill="#ecf0f1" text-anchor="end" font-weight="bold">123</text>
+
+  <!-- Calculator buttons grid -->
+  <!-- Row 1 -->
+  <circle cx="30" cy="48" r="6" fill="#e74c3c"/>
+  <circle cx="45" cy="48" r="6" fill="#95a5a6"/>
+  <circle cx="60" cy="48" r="6" fill="#f39c12"/>
+  <circle cx="75" cy="48" r="6" fill="#f39c12"/>
+
+  <!-- Row 2 -->
+  <circle cx="30" cy="60" r="6" fill="#ecf0f1"/>
+  <circle cx="45" cy="60" r="6" fill="#ecf0f1"/>
+  <circle cx="60" cy="60" r="6" fill="#ecf0f1"/>
+  <circle cx="75" cy="60" r="6" fill="#f39c12"/>
+
+  <!-- Row 3 -->
+  <circle cx="30" cy="72" r="6" fill="#ecf0f1"/>
+  <circle cx="45" cy="72" r="6" fill="#ecf0f1"/>
+  <circle cx="60" cy="72" r="6" fill="#ecf0f1"/>
+  <circle cx="75" cy="72" r="6" fill="#f39c12"/>
+
+  <!-- Row 4 -->
+  <circle cx="30" cy="84" r="6" fill="#ecf0f1"/>
+  <rect x="40" y="78" width="16" height="12" rx="6" fill="#ecf0f1"/>
+  <circle cx="75" cy="84" r="6" fill="#3498db"/>
+</svg>
