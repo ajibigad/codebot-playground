@@ -103,7 +103,7 @@ function appendToDisplay(value) {
 
 function clearDisplay() {
     resetInactivityTimer();
-    display.value = '';
+    display.value = '0';
     currentInput = '';
     operator = '';
     previousInput = '';
