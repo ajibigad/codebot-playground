@@ -64,7 +64,7 @@ function appendToDisplay(value) {
 
 function clearDisplay() {
     resetInactivityTimer();
-    display.value = '';
+    display.value = '0';
     currentInput = '';
     operator = '';
     previousInput = '';
@@ -185,13 +185,13 @@ describe('Calculator Tests', () => {
     test('should clear display and reset all variables', () => {
       display.value = '123';
       clearDisplay();
-      expect(display.value).toBe('');
+      expect(display.value).toBe('0');
     });
 
     test('should clear display after calculation', () => {
       display.value = '42';
       clearDisplay();
-      expect(display.value).toBe('');
+      expect(display.value).toBe('0');
     });
   });
 
