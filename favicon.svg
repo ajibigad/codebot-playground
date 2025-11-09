@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Calculator body -->
+  <rect x="15" y="10" width="70" height="80" rx="5" fill="#2c3e50" stroke="#34495e" stroke-width="2"/>
+
+  <!-- Display screen -->
+  <rect x="22" y="18" width="56" height="16" rx="2" fill="#7f8c8d" stroke="#95a5a6" stroke-width="1"/>
+  <text x="74" y="29" font-family="Arial, sans-serif" font-size="10" fill="#ecf0f1" text-anchor="end">123</text>
+
+  <!-- Calculator buttons grid -->
+  <!-- Row 1 -->
+  <rect x="23" y="40" width="11" height="9" rx="1.5" fill="#e74c3c"/>
+  <rect x="37" y="40" width="11" height="9" rx="1.5" fill="#95a5a6"/>
+  <rect x="51" y="40" width="11" height="9" rx="1.5" fill="#f39c12"/>
+  <rect x="65" y="40" width="11" height="9" rx="1.5" fill="#f39c12"/>
+
+  <!-- Row 2 -->
+  <rect x="23" y="52" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="37" y="52" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="51" y="52" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="65" y="52" width="11" height="9" rx="1.5" fill="#f39c12"/>
+
+  <!-- Row 3 -->
+  <rect x="23" y="63" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="37" y="63" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="51" y="63" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="65" y="63" width="11" height="9" rx="1.5" fill="#f39c12"/>
+
+  <!-- Row 4 -->
+  <rect x="23" y="74" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="37" y="74" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="51" y="74" width="11" height="9" rx="1.5" fill="#ecf0f1"/>
+  <rect x="65" y="74" width="11" height="9" rx="1.5" fill="#3498db"/>
+</svg>
