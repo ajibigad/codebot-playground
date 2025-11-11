@@ -9,6 +9,8 @@ A simple, clean browser-based calculator application that performs basic arithme
 - Clear and backspace functionality
 - Error handling for division by zero
 - Clean, modern user interface
+- Fun confetti animation that triggers at random intervals (10-60 seconds) during inactivity
+- Countdown timer showing when next confetti will appear
 - Fully tested with Jest
 
 ## Getting Started
@@ -63,7 +65,10 @@ npm run test:coverage
 ├── script.test.js      # Jest tests
 ├── package.json        # Dependencies and scripts
 ├── jest.config.js      # Jest configuration
-└── .gitignore          # Git ignore rules
+├── favicon.svg         # Calculator favicon
+├── .gitignore          # Git ignore rules
+├── CLAUDE.md           # Claude Code instructions
+└── README.md           # Project documentation
 ```
 
 ## Usage
@@ -73,6 +78,8 @@ npm run test:coverage
 - Click "=" to see the result
 - Click "C" to clear the display
 - Click "⌫" to delete the last character
+- Watch the countdown timer at the top to see when the next confetti celebration will trigger
+- Any button click resets the confetti timer to a new random interval
 
 ## Technologies Used
 
@@ -81,6 +88,7 @@ npm run test:coverage
 - Vanilla JavaScript
 - Jest (for testing)
 - live-server (for development)
+- canvas-confetti (for animations)
 
 ## License
 
